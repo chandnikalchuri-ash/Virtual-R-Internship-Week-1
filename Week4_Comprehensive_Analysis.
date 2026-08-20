@@ -1,0 +1,36 @@
+# Week 4: Comprehensive Data Analysis (Master Script)
+# Submitted by: Chandni Kalchuri
+
+# 1. SETUP & DATA CLEANING
+library(ggplot2)
+titanic_data <- read.csv("Titanic-Dataset.csv")
+titanic_data$Age[is.na(titanic_data$Age)] <- median(titanic_data$Age, na.rm = TRUE)
+titanic_data$Survived <- as.factor(titanic_data$Survived)
+titanic_data$Pclass <- as.factor(titanic_data$Pclass)
+titanic_data$Sex <- as.factor(titanic_data$Sex)
+
+# 2. VISUALIZATION
+# Bar Plot for Survival by Class
+p1 <- ggplot(titanic_data, aes(x=Pclass, fill=Survived)) +
+  geom_bar(position="dodge", color="black") +
+  theme_minimal() + labs(title="Survival by Class")
+print(p1)
+
+# 3. STATISTICAL ANALYSIS & MODELING
+# Chi-Square Test
+chisq.test(titanic_data$Sex, titanic_data$Survived)
+
+# Train/Test Split
+set.seed(123) 
+split_index <- sample(1:nrow(titanic_data), 0.8 * nrow(titanic_data))
+train_data <- titanic_data[split_index, ]
+test_data <- titanic_data[-split_index, ]
+
+# Logistic Regression Model
+logistic_model <- glm(Survived ~ Pclass + Sex + Age + Fare, family = "binomial", data = train_data)
+summary(logistic_model)
+
+# Confusion Matrix
+predictions <- predict(logistic_model, test_data, type = "response")
+predicted_classes <- ifelse(predictions > 0.5, 1, 0)
+table(Actual = test_data$Survived, Predicted = predicted_classes)
